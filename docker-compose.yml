@@ -1,39 +1,21 @@
-version: '3'
-
 services:
-
   rabbitmq:
-    image: rabbitmq:3.12-management
-    container_name: my-rabbitmq
-    hostname: localhost-rabbit
-    command: >
-      bash -c "
-       apt-get update -y &&
-       apt-get install -y wget &&
-       wget https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.12.0/rabbitmq_delayed_message_exchange-3.12.0.ez &&
-       mv rabbitmq_delayed_message_exchange-3.12.0.ez $RABBITMQ_HOME/plugins/ &&
-       rabbitmq-plugins enable --offline rabbitmq_delayed_message_exchange &&
-       rabbitmq-server
-      "
+    image: rabbitmq:3-management
+    container_name: rabbitmq_management
+
     ports:
       - "5672:5672"
       - "15672:15672"
 
-  mongodb:
-    image: mongo
-    container_name: mongodb
-    hostname: localhost-mongo
-    ports:
-      - "27017:27017"
+    volumes:
+      - /docker_conf/rabbitmq/data/:/var/lib/rabbitmq/
+    environment:
+      - RABBITMQ_DEFAULT_USER = guest
+      - RABBITMQ_DEFAULT_PASS = guest
 
-  spring-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: spring-app:latest
-    container_name: spring-app
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mongodb
-      - rabbitmq
+    restart: always
+
+volumes:
+  logs-folder:
+    name: ${log_rabbitmq_management}
+    driver: local
